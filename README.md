@@ -1,5 +1,5 @@
 # GeoSpy API Mapping
-Query the GeoSpy API for any number of images, and then visualize that JSON data on a world map.
+Query the [GeoSpy API](https://dev.geospy.ai/docs/routes#overview) for any number of images, and then visualize that JSON data on a world map.
 
 ## Basic Usage
 After cloning the repo, open the app.py script in a text editor. Therein enter your API_TOKEN and IMAGE_FILES strings. Once your details are entered, open a terminal and run *python3 app.py*. This will query the GeoSpy API, and produce a JSON file in the same directory as this script.
