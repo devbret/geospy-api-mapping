@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Geo Coordinate Visualization</title>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+        <style>
+            #mapid {
+                height: 600px;
+                width: 100%;
+            }
+            .custom-icon {
+                border-radius: 50%;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="mapid"></div>
+        <input type="file" id="fileInput" accept=".json" />
+        <button id="loadButton">Load Data</button>
+
+        <script>
+            var mymap = L.map('mapid').setView([29.7618, -95.3828], 3);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap contributors',
+            }).addTo(mymap);
+
+            function interpolateColor(hue, score) {
+                var lightness = score * 1000;
+                lightness = Math.max(0, Math.min(lightness, 1000));
+                return `hsl(${hue}, 100%, ${lightness}%)`;
+            }
+
+            function visualizeData(apiData) {
+                apiData.forEach(function (imageData, objectIndex) {
+                    var imagePath = Object.keys(imageData)[0];
+                    var objectHue = (objectIndex * 137.508) % 360;
+                    Object.values(imageData).forEach(function (data) {
+                        data.geo_predictions.forEach(function (prediction) {
+                            var lat = prediction.coordinates[0];
+                            var lon = prediction.coordinates[1];
+                            var score = prediction.score;
+
+                            var color = interpolateColor(objectHue, score);
+                            var markerHtmlStyles = `
+                    background-color: ${color};
+                    width: 15px;
+                    height: 15px;
+                    display: block;
+                    position: relative;
+                    transform: translate(-50%, -50%);
+                    border-radius: 50%;
+                    border: 1px solid black;
+                `;
+
+                            var icon = L.divIcon({
+                                className: 'custom-icon',
+                                iconAnchor: [5, 5],
+                                html: `<div style="${markerHtmlStyles}"></div>`,
+                            });
+
+                            L.marker([lat, lon], { icon: icon })
+                                .addTo(mymap)
+                                .bindTooltip(imagePath)
+                                .on('click', function () {
+                                    this.openTooltip();
+                                });
+                        });
+                    });
+                });
+            }
+
+            document.getElementById('loadButton').addEventListener('click', function () {
+                var fileInput = document.getElementById('fileInput');
+                var file = fileInput.files[0];
+
+                if (file) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        var apiData = JSON.parse(e.target.result);
+                        mymap.eachLayer(function (layer) {
+                            if (!layer._url) mymap.removeLayer(layer);
+                        });
+                        visualizeData(apiData);
+                    };
+                    reader.readAsText(file);
+                } else {
+                    alert('Please select a JSON file first.');
+                }
+            });
+        </script>
+    </body>
+</html>
