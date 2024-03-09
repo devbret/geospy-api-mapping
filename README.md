@@ -7,4 +7,4 @@ After cloning the repo, open the app.py script in a text editor. Therein enter y
 Next, open the index.html file in any browser. This will feature a world map, file uploader and "Load Data" button. Upload your file with the fil upload input. And then press the button.
 
 ## Important Points To Remember
-The returned coordinates for each image will all share a similar hue. But the more likely that a prediction is correct, the lighter the shade of a given marker.
+The returned coordinates for each image will all share the same hue. But the more likely a prediction is correct, the lighter the shade of a given marker.
