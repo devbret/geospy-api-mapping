@@ -49,11 +49,14 @@ async def process_images():
     async with aiohttp.ClientSession() as session:
         tasks = []
         for path in IMAGE_FILES:
-            encoded_img = await convert_image_to_base64(path)
-            tasks.append(asyncio.create_task(post_image_data(session, encoded_img, path)))
-            await asyncio.sleep(1)
-        await asyncio.gather(*tasks)
-
+            try:
+                encoded_img = await convert_image_to_base64(path)
+                task = asyncio.create_task(post_image_data(session, encoded_img, path))
+                tasks.append(task)
+                await asyncio.sleep(1)
+            except Exception as e:
+                logging.error(f"Error processing image {path}: {e}")
+        await asyncio.gather(*tasks, return_exceptions=True)
         with open('api_responses.json', 'w') as json_file:
             json.dump(collected_responses, json_file)
 
