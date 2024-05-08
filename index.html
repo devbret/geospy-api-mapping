@@ -1,17 +1,76 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Geo Coordinate Visualization</title>
+        <title>GeoSpy Coordinate Visualization</title>
         <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
         <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
         <script src="https://d3js.org/d3.v7.min.js"></script>
         <style>
+            body {
+                font-family: 'Arial', sans-serif;
+                margin: 0;
+                padding: 20px;
+                background-color: #f4f4f4;
+                color: #333;
+            }
+
             #mapid {
                 height: 600px;
                 width: 100%;
+                margin-bottom: 20px;
             }
+
             .custom-icon {
                 border-radius: 50%;
+            }
+
+            #addressList {
+                max-height: 300px;
+                overflow-y: auto;
+                border: 1px solid #ddd;
+                background-color: white;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                padding: 10px;
+            }
+
+            .address-item {
+                cursor: pointer;
+                padding: 8px;
+                margin-bottom: 5px;
+                border-radius: 5px;
+                transition: background-color 0.3s, transform 0.2s;
+                border-left: 3px solid transparent;
+            }
+
+            .address-item:hover {
+                background-color: #e9ecef;
+                transform: translateX(5px);
+                border-left: 3px solid #007bff;
+            }
+
+            input[type='file'],
+            button {
+                display: block;
+                width: 100%;
+                margin: 10px 0;
+                padding: 10px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                background-color: #fff;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                cursor: pointer;
+                font-size: 16px;
+            }
+
+            button {
+                color: white;
+                background-color: #007bff;
+                border-color: #007bff;
+            }
+
+            button:hover {
+                background-color: #0056b3;
+                border-color: #0056b3;
             }
         </style>
     </head>
@@ -19,6 +78,7 @@
         <div id="mapid"></div>
         <input type="file" id="fileInput" accept=".json" />
         <button id="loadButton">Load Data</button>
+        <div id="addressList" style="margin-top: 20px"></div>
 
         <script>
             var mymap = L.map('mapid').setView([29.7618, -95.3828], 3);
@@ -31,18 +91,24 @@
             function interpolateColor(hue, score) {
                 var lightness = score * 1000;
                 lightness = Math.max(0, Math.min(lightness, 1000));
+                console.log(lightness);
                 return `hsl(${hue}, 100%, ${lightness}%)`;
             }
 
             function visualizeData(apiData) {
+                var addressList = document.getElementById('addressList');
+                addressList.innerHTML = '';
+
                 apiData.forEach(function (imageData, objectIndex) {
                     var imagePath = Object.keys(imageData)[0];
+                    var fileName = imagePath.split('/').pop();
                     var objectHue = (objectIndex * 137.508) % 360;
                     Object.values(imageData).forEach(function (data) {
-                        data.geo_predictions.forEach(function (prediction) {
+                        data.geo_predictions.forEach(function (prediction, index) {
                             var lat = prediction.coordinates[0];
                             var lon = prediction.coordinates[1];
                             var score = prediction.score;
+                            var address = prediction.address;
 
                             var color = interpolateColor(objectHue, score);
                             var markerHtmlStyles = `
@@ -59,15 +125,29 @@
                             var icon = L.divIcon({
                                 className: 'custom-icon',
                                 iconAnchor: [5, 5],
-                                html: `<div style="${markerHtmlStyles}"></div>`,
+                                html: `<div style="${markerHtmlStyles}" class="marker-icon" id="marker-${objectIndex}-${index}"></div>`,
                             });
 
-                            L.marker([lat, lon], { icon: icon })
+                            var marker = L.marker([lat, lon], { icon: icon })
                                 .addTo(mymap)
                                 .bindTooltip(imagePath)
                                 .on('click', function () {
                                     this.openTooltip();
                                 });
+
+                            var addressElement = document.createElement('div');
+                            addressElement.textContent = `${fileName}: ${address}`;
+                            addressElement.className = 'address-item';
+                            addressElement.onmouseover = function () {
+                                document.getElementById(`marker-${objectIndex}-${index}`).style.backgroundColor = 'magenta';
+                            };
+                            addressElement.onmouseout = function () {
+                                document.getElementById(`marker-${objectIndex}-${index}`).style.backgroundColor = color;
+                            };
+                            addressElement.onclick = function () {
+                                mymap.setView([lat, lon], 16);
+                            };
+                            addressList.appendChild(addressElement);
                         });
                     });
                 });
@@ -94,3 +174,4 @@
         </script>
     </body>
 </html>
+
