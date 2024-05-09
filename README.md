@@ -1,4 +1,7 @@
 # GeoSpy API Mapping
+
+![GeoSpy Web App Screenshot](https://hosting.photobucket.com/images/i/bernhoftbret/geospy-web-app-screenshot.png)
+
 Query the [GeoSpy API](https://dev.geospy.ai/docs/routes#overview) for any number of images, and then visualize that JSON data on a world map.
 
 ## Basic Usage
