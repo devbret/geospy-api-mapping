@@ -4,6 +4,7 @@
         <title>GeoSpy Coordinate Visualization</title>
         <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
         <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+        <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
         <script src="https://d3js.org/d3.v7.min.js"></script>
         <style>
             body {
@@ -14,7 +15,7 @@
                 color: #333;
             }
             #mapid {
-                height: 600px;
+                height: 400px;
                 width: 100%;
                 margin-bottom: 20px;
             }
@@ -68,7 +69,7 @@
                 position: fixed;
                 bottom: -20px;
                 right: 0px;
-                width: 400px;
+                width: 500px;
                 box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
                 display: none;
                 overflow: hidden;
@@ -84,19 +85,42 @@
         <div id="mapid"></div>
         <input type="file" id="fileInput" accept=".json" />
         <button id="loadButton">Load Data</button>
+        <select id="sortOptions">
+            <option value="nameAsc">Sort by filename</option>
+            <option value="scoreAsc">Sort by score</option>
+        </select>
+        <input type="text" id="searchInput" placeholder="Search by address..." />
         <div id="addressList" style="margin-top: 20px"></div>
         <div id="imagePreview">
             <img id="previewImg" src="" alt="Image Preview" />
         </div>
         <script>
-            var mymap = L.map('mapid').setView([29.7618, -95.3828], 3);
+            var mymap = L.map('mapid').setView([36.7618, -95.3828], 2);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
                 attribution: '© OpenStreetMap contributors',
             }).addTo(mymap);
+            var markers = [];
+            var heatLayer;
+            var addressElements = [];
+            var initialData = [];
             function visualizeData(apiData) {
+                initialData = apiData;
                 var addressList = document.getElementById('addressList');
                 addressList.innerHTML = '';
+                markers = [];
+                var heatmapData = [];
+                let minScore = Infinity;
+                let maxScore = -Infinity;
+                let addressElements = [];
+                apiData.forEach(function (imageData) {
+                    Object.values(imageData).forEach(function (data) {
+                        data.geo_predictions.forEach(function (prediction) {
+                            minScore = Math.min(minScore, prediction.score);
+                            maxScore = Math.max(maxScore, prediction.score);
+                        });
+                    });
+                });
                 apiData.forEach(function (imageData, objectIndex) {
                     var imagePath = Object.keys(imageData)[0];
                     var fileName = imagePath.split('/').pop();
@@ -111,15 +135,16 @@
                             var address = prediction.address;
                             var color = `hsl(${objectHue}, 100%, 50%)`;
                             var markerHtmlStyles = `
-                            background-color: ${color};
-                            width: 15px;
-                            height: 15px;
-                            display: block;
-                            position: relative;
-                            transform: translate(-50%, -50%);
-                            border-radius: 50%;
-                            border: 1px solid black;
-                        `;
+                                background-color: ${color};
+                                width: 15px;
+                                height: 15px;
+                                display: block;
+                                position: relative;
+                                transform: translate(-50%, -50%);
+                                border-radius: 50%;
+                                border: 2px solid black;
+                            `;
+                            var markerColor = color;
                             var icon = L.divIcon({
                                 className: 'custom-icon',
                                 iconAnchor: [5, 5],
@@ -127,30 +152,125 @@
                             });
                             var marker = L.marker([lat, lon], { icon: icon })
                                 .addTo(mymap)
-                                .bindTooltip(serverRelativeImagePath)
+                                .bindTooltip(
+                                    `
+                                        <div>
+                                            <strong>Filename:</strong> ${fileName}<br/>
+                                            <strong>Address:</strong> ${address}<br/>
+                                            <strong>Confidence:</strong> ${prediction.score}
+                                        </div>
+                                    `,
+                                    {
+                                        permanent: false,
+                                        direction: 'auto',
+                                    }
+                                )
                                 .on('click', function () {
                                     this.openTooltip();
                                 });
+                            markers.push({ marker, address, elementId: `marker-${objectIndex}-${index}` });
                             var addressElement = document.createElement('div');
-                            addressElement.textContent = `${fileName}: ${address}`;
+                            addressElement.innerHTML = `<b>File Name:</b> ${fileName}<br>
+                            <b>Address:</b> ${address}<br>
+                            <b>Prediction Score:</b> ${prediction.score}`;
                             addressElement.className = 'address-item';
+                            addressElement.dataset.address = address.toLowerCase();
+                            addressElement.dataset.fileName = fileName;
+                            addressElement.dataset.score = prediction.score;
+                            addressElement.dataset.markerId = `marker-${objectIndex}-${index}`;
+                            addressElement.marker = marker;
                             addressElement.onmouseover = function () {
                                 previewImg.src = serverRelativeImagePath;
                                 imagePreview.style.display = 'block';
-                                document.getElementById(`marker-${objectIndex}-${index}`).style.backgroundColor = 'black';
+                                this.marker.openTooltip();
+                                var iconElement = document.getElementById(`marker-${objectIndex}-${index}`);
+                                if (iconElement) {
+                                    iconElement.style.backgroundColor = 'black';
+                                }
                             };
                             addressElement.onmouseout = function () {
                                 imagePreview.style.display = 'none';
-                                document.getElementById(`marker-${objectIndex}-${index}`).style.backgroundColor = color;
+                                this.marker.closeTooltip();
+                                var iconElement = document.getElementById(`marker-${objectIndex}-${index}`);
+                                if (iconElement) {
+                                    iconElement.style.backgroundColor = markerColor;
+                                }
                             };
                             addressElement.onclick = function () {
-                                mymap.setView([lat, lon], 16);
+                                mymap.setView([lat, lon], 19);
                             };
                             addressList.appendChild(addressElement);
+                            const finalScore = (prediction.score - minScore) / (maxScore - minScore);
+                            heatmapData.push([lat, lon, finalScore]);
                         });
                     });
                 });
+                if (heatLayer) {
+                    mymap.removeLayer(heatLayer);
+                }
+                heatLayer = L.heatLayer(heatmapData, {
+                    radius: 43,
+                    blur: 15,
+                    max: 1.0,
+                    gradient: { 0.4: 'blue', 0.6: 'lime', 1: 'red' },
+                }).addTo(mymap);
+                var minScoreTwo = Math.min(...heatmapData.map((item) => item[2]));
+                var maxScoreTwo = Math.max(...heatmapData.map((item) => item[2]));
+                function scoreToPercentage(score) {
+                    return ((score - minScoreTwo) / (maxScoreTwo - minScoreTwo)) * 100;
+                }
+                function getColor(d) {
+                    return d > 75 ? 'red' : d > 50 ? 'lime' : d > 25 ? 'blue' : '#FFEDA0';
+                }
+                var legend = L.control({ position: 'bottomright' });
+                legend.onAdd = function (map) {
+                    var div = L.DomUtil.create('div', 'info legend'),
+                        grades = [0, 25, 50, 75, 100],
+                        labels = [],
+                        from,
+                        to;
+                    div.innerHTML = '<h4>Overall Certainty</h4>';
+                    for (var i = 0; i < grades.length; i++) {
+                        from = grades[i];
+                        to = grades[i + 1];
+                        labels.push(
+                            '<i style="background:' +
+                                getColor(from + 1) +
+                                '; width: 10px; height: 10px; display: inline-block;"></i> ' +
+                                from +
+                                '%' +
+                                (to ? '&ndash;' + to + '%' : '+')
+                        );
+                    }
+                    div.innerHTML += labels.join('<br>');
+                    return div;
+                };
+                legend.addTo(mymap);
             }
+            function sortAndDisplayAddresses(sortType) {
+                addressElements = [...document.querySelectorAll('.address-item')];
+                var addressList = document.getElementById('addressList');
+                while (addressList.firstChild) {
+                    addressList.removeChild(addressList.firstChild);
+                }
+                if (sortType === 'scoreAsc') {
+                    addressElements.sort((a, b) => {
+                        const scoreA = parseFloat(a.dataset.score);
+                        const scoreB = parseFloat(b.dataset.score);
+                        return scoreA < scoreB ? -1 : scoreA > scoreB ? 1 : 0;
+                    });
+                } else if (sortType === 'nameAsc') {
+                    addressElements.sort((a, b) => {
+                        const nameA = a.dataset.fileName;
+                        const nameB = b.dataset.fileName;
+                        return nameA < nameB ? -1 : nameA > nameB ? 1 : 0;
+                    });
+                }
+                addressElements.forEach((element) => addressList.appendChild(element));
+            }
+            document.getElementById('sortOptions').addEventListener('change', function () {
+                sortAndDisplayAddresses(this.value);
+            });
             document.getElementById('loadButton').addEventListener('click', function () {
                 var fileInput = document.getElementById('fileInput');
                 var file = fileInput.files[0];
@@ -167,6 +287,24 @@
                 } else {
                     alert('Please select a JSON file first.');
                 }
+            });
+            document.getElementById('searchInput').addEventListener('input', function (e) {
+                var searchTerm = e.target.value.toLowerCase();
+                markers.forEach(function (item) {
+                    if (item.address.toLowerCase().includes(searchTerm)) {
+                        item.marker._icon.style.display = 'block';
+                    } else {
+                        item.marker._icon.style.display = 'none';
+                    }
+                });
+                var addressItems = document.querySelectorAll('.address-item');
+                addressItems.forEach(function (item) {
+                    if (item.dataset.address.includes(searchTerm)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
             });
         </script>
     </body>
