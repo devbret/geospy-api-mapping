@@ -1,0 +1,1 @@
+Place all image files in this folder, for maximum compatibility with app features.
