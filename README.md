@@ -1,4 +1,4 @@
-# GeoSpy API Mapping
+# GeoSpy API Mapping Application
 
 ![GeoSpy Web App Screenshot](https://hosting.photobucket.com/images/i/bernhoftbret/geospy-web-app-screenshot.png)
 
