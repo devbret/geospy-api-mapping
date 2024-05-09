@@ -5,15 +5,13 @@ import logging
 import json
 from aiohttp import ClientTimeout
 
-# This file is a re-work of the basic_usage.py script found here - https://github.com/Graylark-io/GeoSpy-API-Examples
-
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s: %(message)s')
 
 API_TOKEN = "your_api_key"
 API_BASE = "https://dev.geospy.ai"
 API_ENDPOINT = "/predict"
 FULL_API_URL = f"{API_BASE}{API_ENDPOINT}"
-IMAGE_FILES = ["path/to/your/images.jpg",]
+IMAGE_FILES = ["path/to/your/images/example.jpg",]
 
 request_timeout = ClientTimeout(total=60)
 
