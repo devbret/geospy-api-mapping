@@ -1,33 +1,41 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>GeoSpy Coordinate Visualization</title>
+        <title>GeoSpy API Mapping Application</title>
         <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
         <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
         <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
         <script src="https://d3js.org/d3.v7.min.js"></script>
         <style>
             body {
-                font-family: 'Arial', sans-serif;
+                font-family: 'Helvetica Neue', Arial, sans-serif;
                 margin: 0;
                 padding: 20px;
-                background-color: #f4f4f4;
+                background-color: #ffffff;
                 color: #333;
+                line-height: 1.6;
+            }
+            h3,
+            h4 {
+                margin: 0px 0px 5px 0px;
+                text-align: center;
+                font-weight: 300;
             }
             #mapid {
                 height: 400px;
                 width: 100%;
-                margin-bottom: 20px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             }
             .custom-icon {
                 border-radius: 50%;
             }
             #addressList {
+                min-height: 300px;
                 max-height: 300px;
                 overflow-y: auto;
                 border: 1px solid #ddd;
                 background-color: white;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
                 padding: 10px;
             }
             .address-item {
@@ -39,20 +47,31 @@
                 border-left: 3px solid transparent;
             }
             .address-item:hover {
-                background-color: #e9ecef;
+                background-color: #f8f9fa;
                 transform: translateX(5px);
-                border-left: 3px solid #0056b3;
+                border-left: 3px solid #007bff;
+            }
+            .uiHolders {
+                display: flex;
+                align-items: center;
+                justify-content: flex-start;
+            }
+            .uiHolders button,
+            .uiHolders select,
+            .uiHolders input {
+                margin-right: 10px;
             }
             input[type='file'],
-            button {
+            input[type='text'],
+            button,
+            select {
                 display: block;
-                width: 100%;
-                margin: 10px 0;
+                margin: 10px 10px 10px 0;
                 padding: 10px;
                 border: 1px solid #ccc;
                 border-radius: 5px;
                 background-color: #fff;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
                 cursor: pointer;
                 font-size: 16px;
             }
@@ -60,6 +79,7 @@
                 color: white;
                 background-color: #007bff;
                 border-color: #007bff;
+                transition: background-color 0.3s, border-color 0.3s;
             }
             button:hover {
                 background-color: #0056b3;
@@ -69,31 +89,46 @@
                 position: fixed;
                 bottom: -20px;
                 right: 0px;
-                width: 500px;
+                width: 400px;
                 box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
                 display: none;
                 overflow: hidden;
             }
             #previewImg {
                 width: 100%;
-                height: 100%;
-                object-fit: contain;
+                height: auto;
+                object-fit: cover;
+            }
+            #legend {
+                background-color: white;
+                padding: 10px;
+                border-radius: 5px;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            }
+            #devCredit {
+                text-align: center;
+                font-size: 13px;
+                margin-top: 20px;
+                font-style: italic;
             }
         </style>
     </head>
     <body>
         <div id="mapid"></div>
-        <input type="file" id="fileInput" accept=".json" />
-        <button id="loadButton">Load Data</button>
-        <select id="sortOptions">
-            <option value="nameAsc">Sort by filename</option>
-            <option value="scoreAsc">Sort by score</option>
-        </select>
-        <input type="text" id="searchInput" placeholder="Search by address..." />
-        <div id="addressList" style="margin-top: 20px"></div>
+        <div class="uiHolders">
+            <input type="file" id="fileInput" accept=".json" />
+            <button id="loadButton">Load Data</button>
+            <select id="sortOptions">
+                <option value="nameAsc">Filename Sort</option>
+                <option value="scoreAsc">Score Sort</option>
+            </select>
+            <input type="text" id="searchInput" placeholder="Address Search..." />
+        </div>
+        <div id="addressList"></div>
         <div id="imagePreview">
             <img id="previewImg" src="" alt="Image Preview" />
         </div>
+        <p id="devCredit">Built By: <a href="https://github.com/devbret" target="_blank">Bret Bernhoft</a></p>
         <script>
             var mymap = L.map('mapid').setView([36.7618, -95.3828], 2);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -112,6 +147,8 @@
                 var heatmapData = [];
                 let minScore = Infinity;
                 let maxScore = -Infinity;
+                var baseHues = [];
+                var baseHue;
                 let addressElements = [];
                 apiData.forEach(function (imageData) {
                     Object.values(imageData).forEach(function (data) {
@@ -125,9 +162,13 @@
                     var imagePath = Object.keys(imageData)[0];
                     var fileName = imagePath.split('/').pop();
                     var serverRelativeImagePath = 'images/' + fileName;
-                    var baseHue = Math.random() * 360;
-                    var hueIncrement = 0.1;
-                    var objectHue = (baseHue + objectIndex * hueIncrement) % 360;
+                    let counter = 0;
+                    do {
+                        baseHue = Math.random() * 360;
+                        counter++;
+                    } while (baseHues.some((hue) => Math.abs(hue - baseHue) < 33) && counter < 50);
+                    baseHues.push(baseHue);
+                    var objectHue = baseHue % 360;
                     Object.values(imageData).forEach(function (data) {
                         data.geo_predictions.forEach(function (prediction, index) {
                             var lat = prediction.coordinates[0];
@@ -140,9 +181,10 @@
                                 height: 15px;
                                 display: block;
                                 position: relative;
-                                transform: translate(-50%, -50%);
+                                transform: translate(-25%, -25%);
                                 border-radius: 50%;
                                 border: 2px solid black;
+                                box-shadow: 0 0 13px rgba(0, 0, 0, 0.23);
                             `;
                             var markerColor = color;
                             var icon = L.divIcon({
@@ -166,7 +208,22 @@
                                     }
                                 )
                                 .on('click', function () {
-                                    this.openTooltip();
+                                    mymap.setView([lat, lon], 19);
+                                })
+                                .on('mouseover', function () {
+                                    previewImg.src = serverRelativeImagePath;
+                                    imagePreview.style.display = 'block';
+                                    var iconElement = document.getElementById(`marker-${objectIndex}-${index}`);
+                                    if (iconElement) {
+                                        iconElement.style.backgroundColor = 'black';
+                                    }
+                                })
+                                .on('mouseout', function () {
+                                    imagePreview.style.display = 'none';
+                                    var iconElement = document.getElementById(`marker-${objectIndex}-${index}`);
+                                    if (iconElement) {
+                                        iconElement.style.backgroundColor = markerColor;
+                                    }
                                 });
                             markers.push({ marker, address, elementId: `marker-${objectIndex}-${index}` });
                             var addressElement = document.createElement('div');
@@ -229,7 +286,9 @@
                         labels = [],
                         from,
                         to;
-                    div.innerHTML = '<h4>Overall Certainty</h4>';
+                    div.id = 'legend';
+                    div.innerHTML = '<h3>Heatmap Legend</h3>';
+                    div.innerHTML += '<h4>Overall Certainty</h4>';
                     for (var i = 0; i < grades.length; i++) {
                         from = grades[i];
                         to = grades[i + 1];
@@ -245,7 +304,9 @@
                     div.innerHTML += labels.join('<br>');
                     return div;
                 };
-                legend.addTo(mymap);
+                if (!document.getElementById('legend')) {
+                    legend.addTo(mymap);
+                }
             }
             function sortAndDisplayAddresses(sortType) {
                 addressElements = [...document.querySelectorAll('.address-item')];
