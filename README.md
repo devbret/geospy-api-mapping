@@ -1,6 +1,6 @@
 # GeoSpy API Mapping Application
 
-![GeoSpy Web App Screenshot](https://hosting.photobucket.com/images/i/bernhoftbret/next-version-of-geospy-ui-screenshot.png)
+![GeoSpy Web App Screenshot](https://hosting.photobucket.com/images/i/bernhoftbret/geospy-api-mapping-app-histogram-update.png)
 
 Query the [GeoSpy API](https://dev.geospy.ai/docs/routes#overview) for any allowed number of images using Python. Then visualize that JSON data on a world map with D3.
 
@@ -10,7 +10,7 @@ After cloning the repo, first open the provided images directory, and add your f
 
 Next, open the index.html file with any modern web browser. This will feature a world map, file uploader, "Load Data" button and other interfaces. Select your JSON with the file input element. Finally press the blue button to load and display the results.
 
-For further clarification of how this app works, [here is a brief YouTube video walkthrough](https://youtu.be/tLm-AYzF2fs).
+For further clarification of how this app works, [here is a brief YouTube video walkthrough](https://youtu.be/FJfkNz5O41A).
 
 ## Important Point To Remember
 
