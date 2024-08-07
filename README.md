@@ -4,6 +4,8 @@
 
 Query the [GeoSpy API](https://dev.geospy.ai/docs/routes#overview) for any allowed number of images using Python. Then visualize that JSON data on a world map with D3.
 
+If you would like to view a quick demo of this application, here is [a YouTube video](https://youtu.be/KtOU95pg9hY) to check out.
+
 ## Basic Usage
 
 After cloning the repo, first open the provided images directory, and add your files/photos therein. Then open the app.py script in a text editor. Here, enter your API_TOKEN value and IMAGE_FILES path(s), from the previously mentioned images directory. Once your details are saved, open a terminal and run `pip install -r requirements.txt`. Thereby ensuring that you have the Python library needed for this application to work properly. Following a successful install, run `python3 app.py` in the console. This will query the GeoSpy API, and produce a JSON file locally.
