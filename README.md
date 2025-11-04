@@ -8,8 +8,10 @@ Query the [GeoSpy API](https://dev.geospy.ai/docs/routes#overview) for any allow
 
 After cloning the repo, first open the provided images directory, and add your files/photos therein. Then open the app.py script in a text editor. Here, enter your API_TOKEN value and IMAGE_FILES path(s), from the previously mentioned images directory. Once your details are saved, open a terminal and run `pip install -r requirements.txt`. Thereby ensuring that you have the Python library needed for this application to work properly. Following a successful install, run `python3 app.py` in the console. This will query the GeoSpy API, and produce a JSON file locally.
 
-Next, open the index.html file with any modern web browser. This will feature a world map, file uploader, "Load Data" button and other interfaces. Select your JSON with the file input element. Finally press the blue button to load and display the results.
+Next, open the index.html file with any modern web browser. This will feature a world map, file uploader, "Load Data" button and other interfaces. Select your JSON with the file input element. Finally press the blue button to load and display the results. The predictive coordinates returned for each image will all share the same hue when viewed as markers on the world map.
 
-## Important Point To Remember
+## Please Read The Following
 
-The predictive coordinates returned for each image will all share the same hue when viewed as markers on the world map.
+This repo is no longer being actively maintained, given the GeoSpy API is not available for testing, demoing or generally playing around with. Best of luck if you, for some reason, do choose to use this application!
+
+If you have any questions, feel free to [reach out](https://bretbernhoft.com/).
