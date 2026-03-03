@@ -57,7 +57,10 @@ function visualizeData(apiData) {
     do {
       baseHue = Math.random() * 360;
       counter++;
-    } while (baseHues.some((hue) => Math.abs(hue - baseHue) < 33) && counter < 50);
+    } while (
+      baseHues.some((hue) => Math.abs(hue - baseHue) < 33) &&
+      counter < 50
+    );
     baseHues.push(baseHue);
     var objectHue = baseHue % 360;
     Object.values(imageData).forEach(function (data) {
@@ -67,16 +70,16 @@ function visualizeData(apiData) {
         var address = prediction.address;
         var color = `hsl(${objectHue}, 100%, 50%)`;
         var markerHtmlStyles = `
-                                background-color: ${color};
-                                width: 15px;
-                                height: 15px;
-                                display: block;
-                                position: relative;
-                                transform: translate(-25%, -25%);
-                                border-radius: 50%;
-                                border: 2px solid black;
-                                box-shadow: 0 0 13px rgba(0, 0, 0, 0.23);
-                            `;
+            background-color: ${color};
+            width: 15px;
+            height: 15px;
+            display: block;
+            position: relative;
+            transform: translate(-25%, -25%);
+            border-radius: 50%;
+            border: 2px solid black;
+            box-shadow: 0 0 13px rgba(0, 0, 0, 0.23);
+        `;
         var markerColor = color;
         var icon = L.divIcon({
           className: "custom-icon",
@@ -87,16 +90,16 @@ function visualizeData(apiData) {
           .addTo(mymap)
           .bindTooltip(
             `
-                                    <div>
-                                        <strong>Filename:</strong> ${fileName}<br/>
-                                        <strong>Address:</strong> ${address}<br/>
-                                        <strong>Confidence:</strong> ${prediction.score}
-                                    </div>
-                                    `,
+              <div>
+                  <strong>Filename:</strong> ${fileName}<br/>
+                  <strong>Address:</strong> ${address}<br/>
+                  <strong>Confidence:</strong> ${prediction.score}
+              </div>
+            `,
             {
               permanent: false,
               direction: "auto",
-            }
+            },
           )
           .on("click", function () {
             mymap.setView([lat, lon], 19);
@@ -104,7 +107,7 @@ function visualizeData(apiData) {
           .on("mouseover", function () {
             showImagePreview(serverRelativeImagePath);
             var iconElement = document.getElementById(
-              `marker-${objectIndex}-${index}`
+              `marker-${objectIndex}-${index}`,
             );
             if (iconElement) {
               iconElement.style.backgroundColor = "black";
@@ -113,7 +116,7 @@ function visualizeData(apiData) {
           .on("mouseout", function () {
             hideImagePreview();
             var iconElement = document.getElementById(
-              `marker-${objectIndex}-${index}`
+              `marker-${objectIndex}-${index}`,
             );
             if (iconElement) {
               iconElement.style.backgroundColor = markerColor;
@@ -127,8 +130,8 @@ function visualizeData(apiData) {
 
         var addressElement = document.createElement("div");
         addressElement.innerHTML = `<b>File Name:</b> ${fileName}<br>
-                            <b>Address:</b> ${address}<br>
-                            <b>Prediction Score:</b> ${prediction.score}`;
+        <b>Address:</b> ${address}<br>
+        <b>Prediction Score:</b> ${prediction.score}`;
         addressElement.className = "address-item";
         addressElement.dataset.address = address.toLowerCase();
         addressElement.dataset.fileName = fileName;
@@ -139,7 +142,7 @@ function visualizeData(apiData) {
           showImagePreview(serverRelativeImagePath);
           this.marker.openTooltip();
           var iconElement = document.getElementById(
-            `marker-${objectIndex}-${index}`
+            `marker-${objectIndex}-${index}`,
           );
           if (iconElement) {
             iconElement.style.backgroundColor = "black";
@@ -149,7 +152,7 @@ function visualizeData(apiData) {
           hideImagePreview();
           this.marker.closeTooltip();
           var iconElement = document.getElementById(
-            `marker-${objectIndex}-${index}`
+            `marker-${objectIndex}-${index}`,
           );
           if (iconElement) {
             iconElement.style.backgroundColor = markerColor;
@@ -202,7 +205,7 @@ function visualizeData(apiData) {
           '; width: 10px; height: 10px; display: inline-block;"></i> ' +
           from +
           "%" +
-          (to ? "&ndash;" + to + "%" : "+")
+          (to ? "&ndash;" + to + "%" : "+"),
       );
     }
     div.innerHTML += labels.join("<br>");

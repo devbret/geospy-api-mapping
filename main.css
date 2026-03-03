@@ -40,7 +40,9 @@ h3 {
   padding: 10px;
   margin-bottom: 10px;
   border-radius: 5px;
-  transition: background-color 0.3s, transform 0.2s;
+  transition:
+    background-color 0.3s,
+    transform 0.2s;
   border-left: 3px solid transparent;
 }
 .address-item:hover {
@@ -77,7 +79,9 @@ button {
   color: white;
   background-color: #007bff;
   border-color: #007bff;
-  transition: background-color 0.3s, border-color 0.3s;
+  transition:
+    background-color 0.3s,
+    border-color 0.3s;
 }
 button:hover {
   background-color: #0056b3;
