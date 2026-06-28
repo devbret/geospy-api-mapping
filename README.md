@@ -4,19 +4,13 @@
 
 Geolocation analysis and visualization tool which takes one or more images, sends them to the [GeoSpy API](https://dev.geospy.ai/docs/routes#overview) for location prediction and presents the results interactively on a web-based map and data dashboard.
 
-## Overview
+## Application Overview
 
 The Python backend encodes images to Base64, submits them to the API, collects the top geolocation predictions and saves the structured responses to a JSON file. The JavaScript frontend loads the JSON file and visualizes predictions using Leaflet for interactive map markers and heatmaps. D3.js is also used for a confidence score histogram and dynamic UI components for sorting, searching, previewing images and exploring prediction certainty.
 
 Together, the system enables users to analyze where an image was likely taken, compare prediction confidence levels and visually explore spatial clustering and score distribution.
 
-## Please Read The Following
-
-This repository has been officially deprecated and is no longer actively maintained, primarily because the GeoSpy API it depends on is not accessible for testing, demonstration or general use. Without access to this core service, key features of the application may not function as intended and no further updates, fixes or support will be provided.
-
-Anyone choosing to use, modify or extend this project should be prepared to replace the API integration, troubleshoot potential issues independently and adapt the codebase to suit their own needs.
-
-## Set Up Instructions
+## Basic Setup Instructions
 
 Below are the set up steps and prerequisite software programs needed for this application to run on a Linux machine.
 
@@ -32,7 +26,7 @@ Below are the set up steps and prerequisite software programs needed for this ap
 
 2. Open a terminal
 
-3. Clone this repository using `git` by running the following command: `git clone git@github.com:devbret/geospy-api-mapping.git`
+3. Clone this repository: `git clone git@github.com:devbret/geospy-api-mapping.git`
 
 4. Navigate to the repo's directory: `cd geospy-api-mapping`
 
@@ -40,29 +34,40 @@ Below are the set up steps and prerequisite software programs needed for this ap
 
 6. Activate your virtual environment: `source venv/bin/activate`
 
-7. Install the needed dependencies for running the script: `pip install -r requirements.txt`
+7. Install the needed dependencies: `pip install -r requirements.txt`
 
-8. Navigate to the provided `images` directory and add your photos
+8. Add your photos to the `images` directory
 
 9. Open `app.py` in a text editor
-   - Enter your `API_TOKEN` value and `IMAGE_FILES` path(s), from the previously mentioned `images` directory
 
-10. Run the script: `python3 app.py`
+10. Enter your `API_TOKEN` value and `IMAGE_FILES` path(s)
 
-11. Use the following command to view the frontend: `python3 -m http.server`
+11. Run the script: `python3 app.py`
 
-12. Via the world map, select your JSON and press the blue button to load and display the results
+12. Launch an HTTP server: `python3 -m http.server`
 
-13. Exit the virtual environment when finished: `deactivate`
+13. Access the user interface in a browser: `http://localhost:8000`
+
+14. Once finished, exit the HTTP server: `CTRL + c`
+
+15. Exit the virtual environment: `deactivate`
 
 ## Other Considerations
 
 This project repo is intended to demonstrate an ability to do the following:
 
-- Process images through a geolocation API and visualize the predicted locations on an interactive map with markers
+- Send images to the GeoSpy API to predict where each photo was likely taken, then save the structured location predictions to a JSON file
 
-- Enable users to explore, search and sort location predictions
+- Visualize those predictions on an interactive web map using Leaflet, displaying both location markers and heatmaps
 
-- Provide a histogram view to analyze the distribution of prediction confidence scores
+- Render a D3.js histogram of confidence scores so users can analyze the distribution of predictions
+
+- Provide a dashboard with sorting, searching and preview controls to let users explore predictions interactively
 
 If you have any questions or would like to collaborate, please reach out either on GitHub or via [my website](https://bretbernhoft.com/).
+
+### Please Read The Following
+
+This repository has been officially deprecated and is no longer actively maintained, primarily because the GeoSpy API it depends on is not accessible for testing, demonstration or general use. Without access to this core service, key features of the application may not function as intended and no further updates, fixes or support will be provided.
+
+Anyone choosing to use, modify or extend this project should be prepared to replace the API integration, troubleshoot potential issues independently and adapt the codebase to suit their own needs.
