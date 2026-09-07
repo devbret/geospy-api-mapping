@@ -54,6 +54,10 @@ Below are the set up steps and prerequisite software programs needed for this ap
 
 ## Other Considerations
 
+Below you will find information not covered in the installation and use sections above. Including the abilities this repo is intended to demonstrate and information about why the repo is no longer being maintained. As well as an overview of the license this code is made available with. And a way to contact the maintainer with questions, suggestions and collaboration opportunities.
+
+### Abilities Demonstrated
+
 This project repo is intended to demonstrate an ability to do the following:
 
 - Send images to the GeoSpy API to predict where each photo was likely taken, then save the structured location predictions to a JSON file
@@ -64,10 +68,14 @@ This project repo is intended to demonstrate an ability to do the following:
 
 - Provide a dashboard with sorting, searching and preview controls to let users explore predictions interactively
 
-If you have any questions or would like to collaborate, please reach out either on GitHub or via [my website](https://bretbernhoft.com/).
-
-### Please Read The Following
+### Repo Not Being Maintained
 
 This repository has been officially deprecated and is no longer actively maintained, primarily because the GeoSpy API it depends on is not accessible for testing, demonstration or general use. Without access to this core service, key features of the application may not function as intended and no further updates, fixes or support will be provided.
 
 Anyone choosing to use, modify or extend this project should be prepared to replace the API integration, troubleshoot potential issues independently and adapt the codebase to suit their own needs.
+
+### License Information
+
+This repository is distributed under the MIT License. You are free to use, copy, modify, merge, publish, distribute, sublicense and sell copies of this software, including as part of proprietary or commercial work. The single condition is the copyright and permission notices contained in the LICENSE file must be included with any copy or substantial portion of the software that you redistribute. The software is provided "as is", without warranty of any kind, and the copyright holder is not liable for any claim or damages arising from its use.
+
+If you have any questions or would like to collaborate, please reach out either on GitHub or via [my website](https://bretbernhoft.com/).
